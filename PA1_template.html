@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<title>Reproducible Research: Peer Assessment 1</title>
+
+<script src="PA1_template_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="PA1_template_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="PA1_template_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="PA1_template_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="PA1_template_files/highlight/default.css"
+      type="text/css" />
+<script src="PA1_template_files/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="PA1_template_files/navigation-1.0/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+<h1 class="title">Reproducible Research: Peer Assessment 1</h1>
+
+</div>
+
+
+<div id="loading-and-preprocessing-the-data" class="section level2">
+<h2>Loading and preprocessing the data</h2>
+<p>The data can be found in the “activity.zip”&quot; file.</p>
+<pre class="r"><code>library(&quot;lattice&quot;)
+Sys.setlocale(&quot;LC_ALL&quot;,&quot;C&quot;)</code></pre>
+<pre><code>## [1] &quot;LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;LC_COLLATE=C;LC_MONETARY=C;LC_MESSAGES=ca_ES.UTF-8;LC_PAPER=ca_ES.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=ca_ES.UTF-8;LC_IDENTIFICATION=C&quot;</code></pre>
+<pre class="r"><code>unzip(&quot;activity.zip&quot;)
+activity = read.csv(&quot;activity.csv&quot;)
+summary(activity)</code></pre>
+<pre><code>##      steps                date          interval     
+##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
+##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
+##  Median :  0.00   2012-10-03:  288   Median :1177.5  
+##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
+##  3rd Qu.: 12.00   2012-10-05:  288   3rd Qu.:1766.2  
+##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
+##  NA&#39;s   :2304     (Other)   :15840</code></pre>
+</div>
+<div id="what-is-mean-total-number-of-steps-taken-per-day" class="section level2">
+<h2>What is mean total number of steps taken per day?</h2>
+<p>For this part of the assignment, we remove the NA values.</p>
+<pre class="r"><code>steps.by.day = with(activity[!is.na(activity$steps),],aggregate(x=steps, by=list(date=date),FUN=&quot;sum&quot;))
+names(steps.by.day)[2]&lt;-&quot;total.steps&quot;</code></pre>
+<p>The data histogram:</p>
+<pre class="r"><code>histogram(steps.by.day$total.steps,xlab=&quot;Total daily step count&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/bydayhist-1.png" title="" alt="" width="672" /></p>
+<pre class="r"><code>mean.steps = mean(steps.by.day$total.steps)</code></pre>
+<p>The mean number of steps is 1.076618910^{4}.</p>
+<pre class="r"><code>median.steps = median(steps.by.day$total.steps)</code></pre>
+<p>The median number of steps is 10765.</p>
+</div>
+<div id="what-is-the-average-daily-activity-pattern" class="section level2">
+<h2>What is the average daily activity pattern?</h2>
+<p>To analize this problem, we will contruct a plot of the average step count for each 5 minute interval.</p>
+<pre class="r"><code>steps.by.interval = with(activity[!is.na(activity$steps),],aggregate(x=steps, by=list(interval=interval),FUN=&quot;mean&quot;))
+names(steps.by.interval)[2]&lt;-&quot;average.steps&quot;
+xyplot(average.steps~interval,data=steps.by.interval,type=&#39;l&#39;,xlab=&quot;5-minute interval&quot;, ylab=&quot;Average steps&quot;,as.table=T)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-3-1.png" title="" alt="" width="672" /></p>
+<p>We see that the interval 835 is the one with the highest average.</p>
+</div>
+<div id="imputing-missing-values" class="section level2">
+<h2>Imputing missing values</h2>
+<p>There are 2304 NA values in the steps field of the activity dataset.</p>
+<p>We will use the mean value for each interval to impute the missing values.</p>
+<pre class="r"><code>filled.activity = activity
+
+fill.na &lt;- function(interval){
+  steps.by.interval$average.steps[head(steps.by.interval$interval==interval,1)]
+}
+
+i=is.na(filled.activity$steps)
+filled.activity$steps[i] &lt;- unlist(lapply(filled.activity$interval[i],fill.na))
+
+steps.by.day = with(filled.activity,aggregate(x=steps, by=list(date=date),FUN=&quot;sum&quot;))
+names(steps.by.day)[2]&lt;-&quot;total.steps&quot;</code></pre>
+<p>The effect of this process can be seen in the histogram, where the highest bin has been increased from 30 to 40.</p>
+<pre class="r"><code>histogram(steps.by.day$total.steps,xlab=&quot;Total daily step count&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-5-1.png" title="" alt="" width="672" /></p>
+<pre class="r"><code>mean.steps = mean(steps.by.day$total.steps)</code></pre>
+<p>The mean number of steps is 1.076618910^{4}.</p>
+<pre class="r"><code>median.steps = median(steps.by.day$total.steps)</code></pre>
+<p>The median number of steps is 1.076618910^{4}.</p>
+<p>The NA inputation process has affected the median, moving it towards the median.</p>
+</div>
+<div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
+<h2>Are there differences in activity patterns between weekdays and weekends?</h2>
+<pre class="r"><code>filled.activity$weekday = factor(ifelse(weekdays(as.POSIXct(filled.activity$date)) %in% c(&quot;Saturday&quot;,&quot;Sunday&quot;), &quot;weekend&quot;,&quot;weekday&quot;))
+
+steps.by.interval = with(filled.activity,aggregate(x=steps, by=list(interval=interval,weekday=weekday),FUN=&quot;mean&quot;))
+names(steps.by.interval)[3]&lt;-&quot;average.steps&quot;
+xyplot(average.steps~interval|weekday,data=steps.by.interval,type=&#39;l&#39;,xlab=&quot;5-minute interval&quot;, ylab=&quot;Average steps&quot;,as.table=T)</code></pre>
+<p><img src="PA1_template_files/figure-html/unnamed-chunk-8-1.png" title="" alt="" width="672" /></p>
+<p>By plotting the average steps for each interval and day type one can see that weekdays have a greater concentration of activity on the morning whereas weekends are more equally distributed on the entire day.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
